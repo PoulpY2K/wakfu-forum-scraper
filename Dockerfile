@@ -15,7 +15,6 @@ RUN npm install
 
 # Move source files
 COPY src ./src
-COPY tsconfig.json .
 
 # Build project
 RUN npm run build
@@ -36,7 +35,7 @@ COPY --from=build-runner /tmp/app/.env /app/.env
 RUN npm install --omit=dev
 
 # Move build files
-COPY --from=build-runner /tmp/app/build /app/build
+COPY --from=build-runner /tmp/app/src /app/src
 
 # Start app
 CMD ["npm", "run", "start"]
