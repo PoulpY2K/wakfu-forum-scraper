@@ -5,7 +5,9 @@ import {JSDOM} from "jsdom";
 import moment from "moment";
 
 import TopicHelper from "./topic-helper.js";
+import ReplyHelper from "./reply-helper.js";
 import UpdateHelper from "./update-helper.js";
+import Constants from "./constants.js";
 
 moment.locale("fr")
 
@@ -13,28 +15,39 @@ const logger = console
 logger.info(chalk.magenta("Successfully loaded scraping script"))
 
 const main = async () => {
-    await JSDOM.fromURL("https://www.wakfu.com/fr/forum").then(async homepageDom => {
+    await JSDOM.fromURL(Constants.WAKFU_FORUM_URL).then(async homepageDom => {
         const globalTopicCount = TopicHelper.getGlobalTopicCount(homepageDom)
-        logger.debug(chalk.cyan(`Found ${globalTopicCount} roleplay main topics!`))
-
         /// TODO: Implement database for real previous value persistence and getter
         const oldGlobalTopicReplies = 290
         const deltaGlobalTopicReplies = globalTopicCount - oldGlobalTopicReplies;
 
-        await JSDOM.fromURL("https://www.wakfu.com/fr/forum/496-histoire-jeu-role").then(async rpHomepageDom => {
-            /*
-            const noticeBoardTopicCount = TopicHelper.getSignRepliesCount(rpHomepageDom)
-            logger.debug(chalk.cyan(`Found ${noticeBoardTopicCount} notice board replies!`))
+        await JSDOM.fromURL(Constants.WAKFU_FORUM_RP_URL).then(async rpHomepageDom => {
+            const noticeBoardTopicCount = ReplyHelper.getNoticeBoardRepliesCount(rpHomepageDom)
+            /// TODO: Implement database for real previous value persistence and getter
             const oldNoticeBoardTopicReplies = 759
+            const deltaNoticeBoardTopicReplies = noticeBoardTopicCount - oldNoticeBoardTopicReplies;
 
-            const rumorsTopicCount = TopicHelper.getRumorsRepliesCount(rpHomepageDom)
-            logger.debug(chalk.cyan(`Found ${rumorsTopicCount} rumors replies!`))
-            const oldRumorsTopicReplies = 496
-             */
+            const rumorsTopicCount = ReplyHelper.getRumorsRepliesCount(rpHomepageDom)
+            /// TODO: Implement database for real previous value persistence and getter
+            const oldRumorsTopicReplies = 496;
+            const deltaRumorsTopicReplies = rumorsTopicCount - oldRumorsTopicReplies;
 
             if (deltaGlobalTopicReplies > 0) {
-                logger.debug(chalk.red(`Found ${deltaGlobalTopicReplies} roleplay main topic post difference!`))
-                await UpdateHelper.sendNewGlobalTopicUpdate(homepageDom, rpHomepageDom, deltaGlobalTopicReplies);
+                await UpdateHelper.sendNewGlobalTopicUpdate(homepageDom, rpHomepageDom, deltaGlobalTopicReplies)
+                    .then((updateCount) => logger.info(chalk.greenBright(`Successfully sent ${updateCount} global topic updates!`)))
+                    .catch((e) => logger.error(chalk.red(e.stack)));
+            }
+
+            if (deltaNoticeBoardTopicReplies > 0) {
+                await UpdateHelper.sendNewNoticeBoardTopicUpdate(rpHomepageDom, deltaNoticeBoardTopicReplies)
+                    .then((updateCount) => logger.info(chalk.greenBright(`Successfully sent ${updateCount} notice board updates!`)))
+                    .catch((e) => logger.error(chalk.red(e.stack)));
+            }
+
+            if (deltaRumorsTopicReplies > 0) {
+                await UpdateHelper.sendNewRumorsTopicUpdate(rpHomepageDom, deltaRumorsTopicReplies)
+                    .then((updateCount) => logger.info(chalk.greenBright(`Successfully sent ${updateCount} rumors updates!`)))
+                    .catch((e) => logger.error(chalk.red(e.stack)));
             }
         });
     });
@@ -42,4 +55,4 @@ const main = async () => {
 
 await main()
     .then(() => logger.info(chalk.green("Successfully executed scraping script")))
-    .catch((e) => logger.error(chalk.red(e)));
+    .catch((e) => logger.error(chalk.red(e.stack)));
