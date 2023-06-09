@@ -2,69 +2,69 @@ import 'dotenv/config'
 
 import chalk from "chalk";
 import {JSDOM} from "jsdom";
-import TopicCount from "./topic-count.js";
-import NewPost from "./new-post.js"
-import {EmbedBuilder, WebhookClient} from "discord.js";
+import moment from "moment";
+import _ from "lodash";
+import {Colors} from "discord.js";
+
+import TopicHelper from "./topic-helper.js";
+import Constants from "./constants.js";
+import DiscordHelper from "./discord-helper.js";
+
+moment.locale("fr")
 
 const logger = console
 logger.info(chalk.magenta("Successfully loaded scraping script"))
 
 await JSDOM.fromURL("https://www.wakfu.com/fr/forum").then(async homepageDom => {
-    const mainTopicCount = TopicCount.getMainTopicCount(homepageDom)
+    const mainTopicCount = TopicHelper.getMainTopicCount(homepageDom)
     logger.debug(chalk.cyan(`Found ${mainTopicCount} roleplay main topics!`))
 
     /// TODO: Implement database for real previous value persistence and getter
-    const precedentValue = 288
+    const precedentValue = 290
 
-    if (mainTopicCount > precedentValue) {
-        const delta = mainTopicCount - precedentValue;
-        logger.debug(chalk.red(`Found ${delta} roleplay main topic post difference!`))
+    await JSDOM.fromURL("https://www.wakfu.com/fr/forum/496-histoire-jeu-role").then(async rpHomepageDom => {
+        /*const noticeBoardTopicCount = TopicHelper.getSignRepliesCount(rpHomepageDom)
+        logger.debug(chalk.cyan(`Found ${noticeBoardTopicCount} notice board replies!`))
 
-        await JSDOM.fromURL("https://www.wakfu.com/fr/forum/496-histoire-jeu-role").then(async rpHomepageDom => {
-            const newPosts = NewPost.getNewPosts(rpHomepageDom, delta)
+        const rumorsTopicCount = TopicHelper.getRumorsRepliesCount(rpHomepageDom)
+        logger.debug(chalk.cyan(`Found ${rumorsTopicCount} rumors replies!`))*/
+
+        if (mainTopicCount > precedentValue) {
+            const delta = mainTopicCount - precedentValue;
+            logger.debug(chalk.red(`Found ${delta} roleplay main topic post difference!`))
+
+            const mainTopicTitle = homepageDom.window.document.body
+                .querySelectorAll("[data-panel-id='493'] tbody > tr")[2]
+                .querySelector(".ak-title-thread a").innerHTML.trim();
+
+            const newPosts = TopicHelper.getNewTopics(rpHomepageDom, delta)
             for (const topic of newPosts) {
-                const authorAvatarURL = topic.querySelector(".ak-avatar > img").src
-                const author = topic.querySelector("a.ak-linker-nickname")
-                const date = topic.querySelector(".ak-desc-topic")
-                console.log(date.childNodes[3].textContent)
-                const title = topic.querySelector("a.ak-title-topic")
-                await JSDOM.fromURL(title.href).then(postPageDom => {
+                const topicInfos = TopicHelper.getTopicInfos(topic)
+                await JSDOM.fromURL(topicInfos.topicLink).then(postPageDom => {
                     const document = postPageDom.window.document;
-                    const postContent = document.body.querySelector(".ak-item-mid > .ak-text").innerHTML
+                    const postTextContent = document.body.querySelector(".ak-item-mid > .ak-text").textContent
 
-                    const webhookClient = new WebhookClient({
-                        id: process.env.WEBHOOK_OTHER_ID,
-                        token: process.env.WEBHOOK_OTHER_TOKEN
+                    /// TODO: Create discord bot that creates a webhook to use in order to have button links
+                    DiscordHelper.getWebhookClient(process.env.WEBHOOK_OTHER_ID, process.env.WEBHOOK_OTHER_TOKEN).send({
+                        username: Constants.WEBHOOK_NAME,
+                        avatarURL: Constants.WEBHOOK_PFP_URL,
+                        embeds: [
+                            DiscordHelper.createEmbed(
+                                topicInfos.title,
+                                topicInfos.topicLink,
+                                postTextContent.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...",
+                                {
+                                    name: topicInfos.authorName,
+                                    iconURL: topicInfos.authorAvatarURL,
+                                    url: topicInfos.authorProfileURL
+                                },
+                                moment(topicInfos.date, Constants.WAKFU_DATE_FORMAT).toDate(),
+                                {text: _.unescape(mainTopicTitle)},
+                                Colors.LuminousVividPink)
+                        ],
                     });
-
-                    const embed = new EmbedBuilder()
-                        .setTitle(title.innerHTML)
-                        .setURL(title.href)
-                        .setDescription(postContent.substring(0, 1024) + "...")
-                        .setAuthor({
-                            name: author.innerHTML,
-                            iconURL: authorAvatarURL,
-                            url: author.href
-                        })
-                        .setColor(0x00FFFF);
-
-                    //webhookClient.send({
-                    //    username: 'Potion de Rappel',
-                    //    avatarURL: 'https://i.imgur.com/AfFp7pu.png',
-                    //    embeds: [embed],
-                    //});
                 })
-
-                //result.push({
-                //    title: anchor.innerHTML,
-                //    link: anchor.href,
-                //})
             }
-        });
-    }
+        }
+    });
 });
-
-/*await JSDOM.fromURL("https://www.wakfu.com/fr/forum/496-histoire-jeu-role").then(rpHomepageDom => {
-    logger.debug(chalk.cyan(`Found ${TopicCount.getSignRepliesCount(rpHomepageDom)} notice board replies!`))
-    logger.debug(chalk.cyan(`Found ${TopicCount.getRumorsRepliesCount(rpHomepageDom)} rumors replies!`))
-});*/
