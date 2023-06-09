@@ -6,11 +6,13 @@ import _ from "lodash";
 
 import TopicHelper from "./topic-helper.js";
 import DiscordHelper from "./discord-helper.js";
-import Constants from "./constants.js";
+import Constants from "../constants.js";
 import ReplyHelper from "./reply-helper.js";
+import CredentialsHelper from "./credentials-helper.js";
+import Topics from "../topics.js";
 
 const logger = console
-const sendNewTopicReplyUpdate = async (rpHomepageDom, titleElement, delta) => {
+const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, delta) => {
     const noticeBoardTitle = titleElement.textContent.trim();
     const noticeBoardTitleURL = titleElement.href;
 
@@ -30,7 +32,8 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, titleElement, delta) => {
                 } = ReplyHelper.getReplyContent(reply)
 
                 /// TODO: Create discord bot that creates a webhook to use in order to have button links
-                DiscordHelper.getWebhookClient(process.env.WEBHOOK_NOTICE_BOARD_ID, process.env.WEBHOOK_NOTICE_BOARD_TOKEN).send({
+                const webhookCredentials = CredentialsHelper.getWebhookCredentials(topicType)
+                DiscordHelper.getWebhookClient(webhookCredentials.id, webhookCredentials.token).send({
                     username: Constants.WEBHOOK_NAME,
                     avatarURL: Constants.WEBHOOK_PFP_URL,
                     embeds: [DiscordHelper.createEmbed(noticeBoardTitle, repliesLastPageLink, text.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...", {
@@ -44,7 +47,7 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, titleElement, delta) => {
     })
 }
 export default {
-    sendNewGlobalTopicUpdate: async function (homepageDom, rpHomepageDom, delta) {
+    sendNewGlobalTopicUpdate: async function (homepageDom, rpHomepageDom, topicType, delta) {
         logger.debug(chalk.red(`Found ${delta} roleplay main topic post difference!`))
 
         const mainTopicTitle = homepageDom.window.document.body
@@ -63,10 +66,11 @@ export default {
             } = TopicHelper.getTopicInfos(topic)
             await JSDOM.fromURL(topicLink).then(postPageDom => {
                 const document = postPageDom.window.document;
-                const postTextContent = document.body.querySelector(".ak-item-mid > .ak-text").textContent.trim()
+                const postTextContent = document.body.querySelector(".ak-item-mid > .ak-text").textContent
 
                 /// TODO: Create discord bot that creates a webhook to use in order to have button links
-                DiscordHelper.getWebhookClient(process.env.WEBHOOK_GLOBAL_ID, process.env.WEBHOOK_GLOBAL_TOKEN).send({
+                const webhookCredentials = CredentialsHelper.getWebhookCredentials(topicType)
+                DiscordHelper.getWebhookClient(webhookCredentials.id, webhookCredentials.token).send({
                     username: Constants.WEBHOOK_NAME,
                     avatarURL: Constants.WEBHOOK_PFP_URL,
                     embeds: [DiscordHelper.createEmbed(title, topicLink, postTextContent.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...", {
@@ -78,7 +82,7 @@ export default {
             })
         }
 
-        return delta.length;
+        return delta;
     },
     sendNewNoticeBoardTopicUpdate: async function (rpHomepageDom, delta) {
         logger.debug(chalk.red(`Found ${delta} notice board replies difference!`))
@@ -87,9 +91,9 @@ export default {
             .querySelectorAll("tr.ak-pinned-topic")[0]
             .querySelector("a.ak-title-topic")
 
-        await sendNewTopicReplyUpdate(rpHomepageDom, noticeBoardTitleElement, delta);
+        await sendNewTopicReplyUpdate(rpHomepageDom, Topics.NoticeBoard, noticeBoardTitleElement, delta);
 
-        return delta.length;
+        return delta;
     },
     sendNewRumorsTopicUpdate: async function (rpHomepageDom, delta) {
         logger.debug(chalk.red(`Found ${delta} rumors replies difference!`))
@@ -98,8 +102,8 @@ export default {
             .querySelectorAll("tr.ak-pinned-topic")[1]
             .querySelector("a.ak-title-topic")
 
-        await sendNewTopicReplyUpdate(rpHomepageDom, rumorsTitleElement, delta);
+        await sendNewTopicReplyUpdate(rpHomepageDom, Topics.Rumors, rumorsTitleElement, delta);
 
-        return delta.length;
+        return delta;
     }
 }

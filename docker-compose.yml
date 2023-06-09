@@ -3,4 +3,3 @@ services:
   wakfu-forum-scraper:
     build: .
     command: node build/main.js
-    environment:

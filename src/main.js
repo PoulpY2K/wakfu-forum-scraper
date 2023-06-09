@@ -1,13 +1,14 @@
-import 'dotenv/config'
+import "dotenv/config"
 
 import chalk from "chalk";
 import {JSDOM} from "jsdom";
 import moment from "moment";
 
-import TopicHelper from "./topic-helper.js";
-import ReplyHelper from "./reply-helper.js";
-import UpdateHelper from "./update-helper.js";
+import TopicHelper from "./helper/topic-helper.js";
+import ReplyHelper from "./helper/reply-helper.js";
+import UpdateHelper from "./helper/update-helper.js";
 import Constants from "./constants.js";
+import Topics from "./topics.js";
 
 moment.locale("fr")
 
@@ -33,7 +34,7 @@ const main = async () => {
             const deltaRumorsTopicReplies = rumorsTopicCount - oldRumorsTopicReplies;
 
             if (deltaGlobalTopicReplies > 0) {
-                await UpdateHelper.sendNewGlobalTopicUpdate(homepageDom, rpHomepageDom, deltaGlobalTopicReplies)
+                await UpdateHelper.sendNewGlobalTopicUpdate(homepageDom, rpHomepageDom, Topics.Global, deltaGlobalTopicReplies)
                     .then((updateCount) => logger.info(chalk.greenBright(`Successfully sent ${updateCount} global topic updates!`)))
                     .catch((e) => logger.error(chalk.red(e.stack)));
             }
@@ -53,6 +54,6 @@ const main = async () => {
     });
 }
 
-await main()
+main()
     .then(() => logger.info(chalk.green("Successfully executed scraping script")))
     .catch((e) => logger.error(chalk.red(e.stack)));

@@ -7,8 +7,7 @@
   "main": "build/main.js",
   "scripts": {
     "watch": "nodemon src/main.js",
-    "dev": "node src/main.js",
-    "start": "node build/main.js"
+    "start": "node src/main.js"
   },
   "dependencies": {
     "chalk": "^5.2.0",

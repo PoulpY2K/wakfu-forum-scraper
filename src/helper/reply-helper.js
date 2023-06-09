@@ -42,7 +42,7 @@ export default {
 
         const date = reply.querySelector(".ak-post-infos span.ak-date").textContent.trim()
 
-        const text = reply.querySelector(".ak-text").textContent.trim()
+        const text = reply.querySelector(".ak-text").textContent
 
         return {
             authorName, authorProfileURL, authorAvatarURL, date, text
