@@ -3,17 +3,19 @@ const getPinnedTopics = (dom) => {
     return document.body.querySelectorAll("tr.ak-pinned-topic")
 }
 export default {
-    getMainTopicCount: function (homepageDom) {
+    getGlobalTopicCount: function (homepageDom) {
         const document = homepageDom.window.document;
         const rpCells = document.body
             .querySelectorAll("[data-panel-id='493'] tbody > tr")[2]
             .querySelectorAll("td")
 
         return +rpCells[2].innerHTML;
-    }, getSignRepliesCount: function (rpHomepageDom) {
+    },
+    getSignRepliesCount: function (rpHomepageDom) {
         const pinnedTopics = getPinnedTopics(rpHomepageDom)
         return pinnedTopics[0].querySelectorAll("td")[1].innerHTML;
-    }, getRumorsRepliesCount: function (rpHomepageDom) {
+    },
+    getRumorsRepliesCount: function (rpHomepageDom) {
         const pinnedTopics = getPinnedTopics(rpHomepageDom)
         return pinnedTopics[1].querySelectorAll("td")[1].innerHTML;
     },
@@ -35,12 +37,7 @@ export default {
         const title = titleElement.textContent.trim()
 
         return {
-            title,
-            topicLink,
-            authorName,
-            authorProfileURL,
-            authorAvatarURL,
-            date,
+            title, topicLink, authorName, authorProfileURL, authorAvatarURL, date,
         }
     }
 }
