@@ -29,8 +29,8 @@ await Database.init(prisma)
         process.exit(1)
     })
 
-logger.info(chalk.magenta("Wakfu Forum Scraper is ready. Executing job every 30th minute."))
-schedule.scheduleJob('*/30 * * * *', async () => {
+logger.info(chalk.magenta("Wakfu Forum Scraper is ready. Executing job every 10th minute."))
+schedule.scheduleJob('*/10 * * * *', async () => {
     logger.info(chalk.magenta("Starting job..."))
 
     await main()
