@@ -22,6 +22,9 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, d
         await JSDOM.fromURL(repliesLastPageLink).then(async noticeBoardLastPageDom => {
             const newReplies = ReplyHelper.getNewReplies(noticeBoardLastPageDom, delta)
 
+            const webhookCredentials = CredentialsHelper.getWebhookCredentials(topicType)
+            const webhookClient = await DiscordHelper.getWebhookClient(webhookCredentials.id, webhookCredentials.token)
+
             for (const reply of newReplies) {
                 let {
                     authorName, authorProfileURL, authorAvatarURL, date, text
@@ -33,8 +36,7 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, d
                 const formattedDate = moment(date, Constants.WAKFU_DATE_FORMAT)
 
                 /// TODO: Create discord bot that creates a webhook to use in order to have button links
-                const webhookCredentials = CredentialsHelper.getWebhookCredentials(topicType)
-                await DiscordHelper.getWebhookClient(webhookCredentials.id, webhookCredentials.token).send({
+                await webhookClient.send({
                     username: Constants.WEBHOOK_NAME,
                     avatarURL: Constants.WEBHOOK_PFP_URL,
                     embeds: [DiscordHelper.createEmbed(noticeBoardTitle, repliesLastPageLink, text.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...", {
@@ -54,6 +56,10 @@ export default {
             .querySelector(".ak-title-thread a").innerHTML.trim();
 
         const newTopics = TopicHelper.getNewTopics(rpHomepageDom, delta)
+
+        const webhookCredentials = CredentialsHelper.getWebhookCredentials(topicType)
+        const webhookClient = await DiscordHelper.getWebhookClient(webhookCredentials.id, webhookCredentials.token)
+
         for (const topic of newTopics) {
             let {
                 title, topicLink, authorName, authorAvatarURL, authorProfileURL, date
@@ -69,8 +75,7 @@ export default {
                 const postTextContent = document.body.querySelector(".ak-item-mid > .ak-text").textContent
 
                 /// TODO: Create discord bot that creates a webhook to use in order to have button links
-                const webhookCredentials = CredentialsHelper.getWebhookCredentials(topicType)
-                await DiscordHelper.getWebhookClient(webhookCredentials.id, webhookCredentials.token).send({
+                await webhookClient.send({
                     username: Constants.WEBHOOK_NAME,
                     avatarURL: Constants.WEBHOOK_PFP_URL,
                     embeds: [DiscordHelper.createEmbed(title, topicLink, postTextContent.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...", {
