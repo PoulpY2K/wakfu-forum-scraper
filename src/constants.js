@@ -5,6 +5,8 @@ export default {
     WAKFU_DATE_FORMAT: "DD MMMM YYYY - hh:mm:ss",
     WAKFU_FORUM_URL: "https://www.wakfu.com/fr/forum",
     WAKFU_FORUM_RP_URL: "https://www.wakfu.com/fr/forum/496-histoire-jeu-role",
+    WAKFU_FORUM_NOTICE_BOARD_TITLE: "[Annonces RP] Tableau d'affichage",
+    WAKFU_FORUM_RUMORS_TITLE: "[RP] Rumeurs...",
 
     EMBED_DESCRIPTION_LENGTH_LIMIT: 4096,
 }

@@ -19,28 +19,22 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, d
     await JSDOM.fromURL(noticeBoardTitleURL).then(async (noticeBoardDom) => {
         const repliesLastPageLink = ReplyHelper.getRepliesLastPageLink(noticeBoardDom)
 
-        await JSDOM.fromURL(repliesLastPageLink).then((noticeBoardLastPageDom) => {
+        await JSDOM.fromURL(repliesLastPageLink).then(async noticeBoardLastPageDom => {
             const newReplies = ReplyHelper.getNewReplies(noticeBoardLastPageDom, delta)
 
             for (const reply of newReplies) {
                 const {
-                    authorName,
-                    authorProfileURL,
-                    authorAvatarURL,
-                    date,
-                    text
+                    authorName, authorProfileURL, authorAvatarURL, date, text
                 } = ReplyHelper.getReplyContent(reply)
 
                 /// TODO: Create discord bot that creates a webhook to use in order to have button links
                 const webhookCredentials = CredentialsHelper.getWebhookCredentials(topicType)
-                DiscordHelper.getWebhookClient(webhookCredentials.id, webhookCredentials.token).send({
+                await DiscordHelper.getWebhookClient(webhookCredentials.id, webhookCredentials.token).send({
                     username: Constants.WEBHOOK_NAME,
                     avatarURL: Constants.WEBHOOK_PFP_URL,
                     embeds: [DiscordHelper.createEmbed(noticeBoardTitle, repliesLastPageLink, text.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...", {
-                        name: authorName,
-                        iconURL: authorAvatarURL,
-                        url: authorProfileURL
-                    }, moment(date, Constants.WAKFU_DATE_FORMAT).toDate(), {text: _.unescape(noticeBoardTitle)}, Colors.Yellow)],
+                        name: authorName, iconURL: authorAvatarURL, url: authorProfileURL
+                    }, moment(date, Constants.WAKFU_DATE_FORMAT).toDate(), {text: topicType === Topics.NoticeBoard ? "Tableau d'affichage" : "Rumeurs"}, topicType === Topics.NoticeBoard ? Colors.White : Colors.DarkBlue)],
                 });
             }
         });
@@ -57,49 +51,46 @@ export default {
         const newTopics = TopicHelper.getNewTopics(rpHomepageDom, delta)
         for (const topic of newTopics) {
             const {
-                title,
-                topicLink,
-                authorName,
-                authorAvatarURL,
-                authorProfileURL,
-                date
+                title, topicLink, authorName, authorAvatarURL, authorProfileURL, date
             } = TopicHelper.getTopicInfos(topic)
-            await JSDOM.fromURL(topicLink).then(postPageDom => {
+            await JSDOM.fromURL(topicLink).then(async postPageDom => {
                 const document = postPageDom.window.document;
                 const postTextContent = document.body.querySelector(".ak-item-mid > .ak-text").textContent
 
                 /// TODO: Create discord bot that creates a webhook to use in order to have button links
                 const webhookCredentials = CredentialsHelper.getWebhookCredentials(topicType)
-                DiscordHelper.getWebhookClient(webhookCredentials.id, webhookCredentials.token).send({
+                await DiscordHelper.getWebhookClient(webhookCredentials.id, webhookCredentials.token).send({
                     username: Constants.WEBHOOK_NAME,
                     avatarURL: Constants.WEBHOOK_PFP_URL,
                     embeds: [DiscordHelper.createEmbed(title, topicLink, postTextContent.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...", {
-                        name: authorName,
-                        iconURL: authorAvatarURL,
-                        url: authorProfileURL
+                        name: authorName, iconURL: authorAvatarURL, url: authorProfileURL
                     }, moment(date, Constants.WAKFU_DATE_FORMAT).toDate(), {text: _.unescape(mainTopicTitle)}, Colors.Yellow)],
                 });
             })
         }
 
         return delta;
-    },
-    sendNewNoticeBoardTopicUpdate: async function (rpHomepageDom, delta) {
+    }, sendNewNoticeBoardTopicUpdate: async function (rpHomepageDom, delta) {
         logger.debug(chalk.red(`Found ${delta} notice board replies difference!`))
 
-        const noticeBoardTitleElement = rpHomepageDom.window.document.body
-            .querySelectorAll("tr.ak-pinned-topic")[0]
+        const pinnedTopics = rpHomepageDom.window.document.body
+            .querySelectorAll("tr.ak-pinned-topic")
+
+        const noticeBoardTitleElement = Array.from(pinnedTopics)
+            .find(el => el.querySelector("a.ak-title-topic").textContent.trim() === Constants.WAKFU_FORUM_NOTICE_BOARD_TITLE)
             .querySelector("a.ak-title-topic")
 
         await sendNewTopicReplyUpdate(rpHomepageDom, Topics.NoticeBoard, noticeBoardTitleElement, delta);
 
         return delta;
-    },
-    sendNewRumorsTopicUpdate: async function (rpHomepageDom, delta) {
+    }, sendNewRumorsTopicUpdate: async function (rpHomepageDom, delta) {
         logger.debug(chalk.red(`Found ${delta} rumors replies difference!`))
 
-        const rumorsTitleElement = rpHomepageDom.window.document.body
-            .querySelectorAll("tr.ak-pinned-topic")[1]
+        const pinnedTopics = rpHomepageDom.window.document.body
+            .querySelectorAll("tr.ak-pinned-topic")
+
+        const rumorsTitleElement = Array.from(pinnedTopics)
+            .find(el => el.querySelector("a.ak-title-topic").textContent.trim() === Constants.WAKFU_FORUM_RUMORS_TITLE)
             .querySelector("a.ak-title-topic")
 
         await sendNewTopicReplyUpdate(rpHomepageDom, Topics.Rumors, rumorsTitleElement, delta);

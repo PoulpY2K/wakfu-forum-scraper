@@ -30,7 +30,7 @@ await Database.init(prisma)
     })
 
 logger.info(chalk.magenta("Wakfu Forum Scraper is ready. Executing job every 30th minute."))
-schedule.scheduleJob('*/1 * * * *', async () => {
+schedule.scheduleJob('*/30 * * * *', async () => {
     logger.info(chalk.magenta("Starting job..."))
 
     await main()
