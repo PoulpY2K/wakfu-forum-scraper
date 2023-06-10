@@ -16,9 +16,6 @@ RUN npm install
 # Move source files
 COPY src ./src
 
-# Build project
-RUN npm run build
-
 ## production runner
 FROM --platform=linux/amd64 node:19-alpine as prod-runner
 
