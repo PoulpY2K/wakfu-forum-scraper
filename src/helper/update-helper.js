@@ -23,9 +23,14 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, d
             const newReplies = ReplyHelper.getNewReplies(noticeBoardLastPageDom, delta)
 
             for (const reply of newReplies) {
-                const {
+                let {
                     authorName, authorProfileURL, authorAvatarURL, date, text
                 } = ReplyHelper.getReplyContent(reply)
+
+                if (date.includes("Aujourd'hui")) {
+                    date = date.replace(/Aujourd'hui/, moment().format('DD MMMM YYYY'))
+                }
+                const formattedDate = moment(date, Constants.WAKFU_DATE_FORMAT)
 
                 /// TODO: Create discord bot that creates a webhook to use in order to have button links
                 const webhookCredentials = CredentialsHelper.getWebhookCredentials(topicType)
@@ -34,7 +39,7 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, d
                     avatarURL: Constants.WEBHOOK_PFP_URL,
                     embeds: [DiscordHelper.createEmbed(noticeBoardTitle, repliesLastPageLink, text.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...", {
                         name: authorName, iconURL: authorAvatarURL, url: authorProfileURL
-                    }, moment(date, Constants.WAKFU_DATE_FORMAT).toDate(), {text: topicType === Topics.NoticeBoard ? "Tableau d'affichage" : "Rumeurs"}, topicType === Topics.NoticeBoard ? Colors.White : Colors.DarkBlue)],
+                    }, formattedDate.toDate(), {text: topicType === Topics.NoticeBoard ? "Tableau d'affichage" : "Rumeurs"}, topicType === Topics.NoticeBoard ? Colors.White : Colors.DarkBlue)],
                 });
             }
         });
@@ -50,9 +55,15 @@ export default {
 
         const newTopics = TopicHelper.getNewTopics(rpHomepageDom, delta)
         for (const topic of newTopics) {
-            const {
+            let {
                 title, topicLink, authorName, authorAvatarURL, authorProfileURL, date
             } = TopicHelper.getTopicInfos(topic)
+
+            if (date.includes("Aujourd'hui")) {
+                date = date.replace(/Aujourd'hui/, moment().format('DD MMMM YYYY'))
+            }
+            const formattedDate = moment(date, Constants.WAKFU_DATE_FORMAT)
+
             await JSDOM.fromURL(topicLink).then(async postPageDom => {
                 const document = postPageDom.window.document;
                 const postTextContent = document.body.querySelector(".ak-item-mid > .ak-text").textContent
@@ -64,7 +75,7 @@ export default {
                     avatarURL: Constants.WEBHOOK_PFP_URL,
                     embeds: [DiscordHelper.createEmbed(title, topicLink, postTextContent.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...", {
                         name: authorName, iconURL: authorAvatarURL, url: authorProfileURL
-                    }, moment(date, Constants.WAKFU_DATE_FORMAT).toDate(), {text: _.unescape(mainTopicTitle)}, Colors.Yellow)],
+                    }, formattedDate.toDate(), {text: _.unescape(mainTopicTitle)}, Colors.Yellow)],
                 });
             })
         }
