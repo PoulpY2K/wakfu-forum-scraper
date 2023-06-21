@@ -32,6 +32,8 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, d
 
                 if (date.includes("Aujourd'hui")) {
                     date = date.replace(/Aujourd'hui/, moment().format('DD MMMM YYYY'))
+                } else if (date.includes("Hier")) {
+                    date = date.replace(/Hier/, moment().subtract(1, 'days').format('DD MMMM YYYY'))
                 }
                 const formattedDate = moment(date, Constants.WAKFU_DATE_FORMAT)
 
@@ -67,6 +69,8 @@ export default {
 
             if (date.includes("Aujourd'hui")) {
                 date = date.replace(/Aujourd'hui/, moment().format('DD MMMM YYYY'))
+            } else if (date.includes("Hier")) {
+                date = date.replace(/Hier/, moment().subtract(1, 'days').format('DD MMMM YYYY'))
             }
             const formattedDate = moment(date, Constants.WAKFU_DATE_FORMAT)
 
