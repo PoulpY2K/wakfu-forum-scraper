@@ -2,11 +2,10 @@ version: "3"
 services:
   db:
     image: postgres:${POSTGRES_VERSION:-latest}
+    container_name: "wakfu-scraper-db"
     restart: always
     volumes:
       - wakfu-scraper-db:/var/lib/postgres/data:rw
-    expose:
-      - "${POSTGRES_PORT:-5432}"
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
@@ -16,10 +15,12 @@ services:
       interval: 10s
     env_file:
       - .env
+
   wakfu-forum-scraper:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: "wakfu-forum-scraper"
     restart: always
     depends_on:
       - db
@@ -28,3 +29,7 @@ services:
 
 volumes:
   wakfu-scraper-db:
+
+networks:
+  default:
+    name: wakfu_network
