@@ -46,7 +46,10 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, d
                 const formattedDate = formatToWakfuDate(date)
 
                 const embed = DiscordHelper.createEmbed(noticeBoardTitle, repliesLastPageLink, text.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8).trim() + "...", {
-                    name: authorName, iconURL: authorAvatarURL, url: authorProfileURL
+                    name: authorName,
+                    ///TODO: Fonctionnalité désactivée le temps qu'Ankama se décide à avoir un vrai serveur pour héberger ses images
+                    //iconURL: authorAvatarURL,
+                    url: authorProfileURL
                 }, formattedDate.toDate(), {text: topicType === Topics.NoticeBoard ? "Tableau d'affichage" : "Rumeurs"}, topicType === Topics.NoticeBoard ? Colors.White : Colors.DarkBlue, image)
 
                 /// TODO: Create discord bot that creates a webhook to use in order to have button links
@@ -86,7 +89,10 @@ export default {
                 const postImage = postText.querySelector(".ak-bbcode-image > img")?.src
 
                 const embed = DiscordHelper.createEmbed(title, topicLink, postTextContent.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8).trim() + "...", {
-                    name: authorName, iconURL: authorAvatarURL, url: authorProfileURL
+                    name: authorName,
+                    ///TODO: Fonctionnalité désactivée le temps qu'Ankama se décide à avoir un vrai serveur pour héberger ses images
+                    //iconURL: authorAvatarURL,
+                    url: authorProfileURL
                 }, formattedDate.toDate(), {text: _.unescape(mainTopicTitle)}, Colors.Yellow, postImage)
 
                 /// TODO: Create discord bot that creates a webhook to use in order to have button links
