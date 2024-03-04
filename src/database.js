@@ -6,7 +6,6 @@ import moment from "moment";
 const logger = console
 
 moment.locale("fr")
-
 export default {
     init: async function (client) {
         const topics = []

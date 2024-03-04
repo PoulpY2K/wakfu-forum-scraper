@@ -1,5 +1,5 @@
 ## build runner
-FROM --platform=linux/amd64 node:20-alpine as build-runner
+FROM node:20-alpine as build-runner
 
 # Set temp directory
 WORKDIR /tmp/app
@@ -13,7 +13,7 @@ COPY src ./src
 RUN npm install
 
 ## production runner
-FROM --platform=linux/amd64 node:20-alpine as prod-runner
+FROM node:20-alpine as prod-runner
 
 # Set work directory
 WORKDIR /app

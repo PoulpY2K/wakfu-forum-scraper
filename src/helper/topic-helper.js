@@ -5,7 +5,6 @@ import moment from "moment";
 const logger = console;
 
 moment.locale("fr")
-
 export default {
     getGlobalTopicCount: function (homepageDom) {
         const document = homepageDom.window.document;

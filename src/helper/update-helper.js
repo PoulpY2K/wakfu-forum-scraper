@@ -40,18 +40,20 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, d
 
             for (const reply of newReplies) {
                 let {
-                    authorName, authorProfileURL, authorAvatarURL, date, text
+                    authorName, authorProfileURL, authorAvatarURL, date, text, image
                 } = ReplyHelper.getReplyContent(reply)
 
                 const formattedDate = formatToWakfuDate(date)
+
+                const embed = DiscordHelper.createEmbed(noticeBoardTitle, repliesLastPageLink, text.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8).trim() + "...", {
+                    name: authorName, iconURL: authorAvatarURL, url: authorProfileURL
+                }, formattedDate.toDate(), {text: topicType === Topics.NoticeBoard ? "Tableau d'affichage" : "Rumeurs"}, topicType === Topics.NoticeBoard ? Colors.White : Colors.DarkBlue, image)
 
                 /// TODO: Create discord bot that creates a webhook to use in order to have button links
                 await webhookClient.send({
                     username: Constants.WEBHOOK_NAME,
                     avatarURL: Constants.WEBHOOK_PFP_URL,
-                    embeds: [DiscordHelper.createEmbed(noticeBoardTitle, repliesLastPageLink, text.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...", {
-                        name: authorName, iconURL: authorAvatarURL, url: authorProfileURL
-                    }, formattedDate, {text: topicType === Topics.NoticeBoard ? "Tableau d'affichage" : "Rumeurs"}, topicType === Topics.NoticeBoard ? Colors.White : Colors.DarkBlue)],
+                    embeds: [embed],
                 });
             }
         });
@@ -79,15 +81,19 @@ export default {
 
             await JSDOM.fromURL(topicLink).then(async postPageDom => {
                 const document = postPageDom.window.document;
-                const postTextContent = document.body.querySelector(".ak-item-mid > .ak-text").textContent
+                const postText = document.body.querySelector(".ak-item-mid > .ak-text")
+                const postTextContent = postText.textContent
+                const postImage = postText.querySelector(".ak-bbcode-image > img")?.src
+
+                const embed = DiscordHelper.createEmbed(title, topicLink, postTextContent.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8).trim() + "...", {
+                    name: authorName, iconURL: authorAvatarURL, url: authorProfileURL
+                }, formattedDate.toDate(), {text: _.unescape(mainTopicTitle)}, Colors.Yellow, postImage)
 
                 /// TODO: Create discord bot that creates a webhook to use in order to have button links
-                await webhookClient.send({
+                const message = await webhookClient.send({
                     username: Constants.WEBHOOK_NAME,
                     avatarURL: Constants.WEBHOOK_PFP_URL,
-                    embeds: [DiscordHelper.createEmbed(title, topicLink, postTextContent.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...", {
-                        name: authorName, iconURL: authorAvatarURL, url: authorProfileURL
-                    }, formattedDate, {text: _.unescape(mainTopicTitle)}, Colors.Yellow)],
+                    embeds: [embed],
                 });
             })
         }

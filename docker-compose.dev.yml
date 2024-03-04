@@ -20,8 +20,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    command: ["sh", "-c", "npx prisma migrate deploy && npm run watch"]
     container_name: "wakfu-forum-scraper"
     restart: always
+    volumes:
+      - .:/app
     depends_on:
       - db
     env_file:

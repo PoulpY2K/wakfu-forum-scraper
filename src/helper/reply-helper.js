@@ -48,10 +48,12 @@ export default {
 
         const date = reply.querySelector(".ak-post-infos span.ak-date").textContent.trim()
 
-        const text = reply.querySelector(".ak-text").textContent
+        const textSelector = reply.querySelector(".ak-text")
+        const text = textSelector.textContent
+        const image = textSelector.querySelector(".ak-bbcode-image > img")?.src
 
         return {
-            authorName, authorProfileURL, authorAvatarURL, date, text
+            authorName, authorProfileURL, authorAvatarURL, date, text, image
         }
     }
 }

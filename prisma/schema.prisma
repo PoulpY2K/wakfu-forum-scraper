@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -9,6 +10,6 @@ datasource db {
 
 model topic {
   topic_id Int    @id(map: "topic_pk") @default(autoincrement())
-  name     String @db.VarChar @unique
+  name     String @unique @db.VarChar
   count    Int    @default(0)
 }

@@ -1,7 +1,7 @@
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, WebhookClient} from "discord.js";
 
 export default {
-    createEmbed: function (title, url, description, author, timestamp, footer, color) {
+    createEmbed: function (title, url, description, author, timestamp, footer, color, image) {
         return new EmbedBuilder()
             .setTitle(title)
             .setURL(url)
@@ -9,7 +9,8 @@ export default {
             .setAuthor(author)
             .setTimestamp(timestamp)
             .setFooter(footer)
-            .setColor(color);
+            .setColor(color)
+            .setImage(image);
     },
     createActionRow: function (...components) {
         return new ActionRowBuilder()
