@@ -12,6 +12,19 @@ import CredentialsHelper from "./credentials-helper.js";
 import Topics from "../topics.js";
 
 const logger = console
+
+moment.locale("fr")
+
+const formatToWakfuDate = (date) => {
+    if (date.includes("Aujourd'hui")) {
+        date = date.replace(/Aujourd'hui/, moment().format('DD MMMM YYYY'))
+    } else if (date.includes("Hier")) {
+        date = date.replace(/Hier/, moment().subtract(1, 'days').format('DD MMMM YYYY'))
+    }
+
+    return moment(date, Constants.WAKFU_DATE_FORMAT)
+}
+
 const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, delta) => {
     const noticeBoardTitle = titleElement.textContent.trim();
     const noticeBoardTitleURL = titleElement.href;
@@ -30,12 +43,7 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, d
                     authorName, authorProfileURL, authorAvatarURL, date, text
                 } = ReplyHelper.getReplyContent(reply)
 
-                if (date.includes("Aujourd'hui")) {
-                    date = date.replace(/Aujourd'hui/, moment().format('DD MMMM YYYY'))
-                } else if (date.includes("Hier")) {
-                    date = date.replace(/Hier/, moment().subtract(1, 'days').format('DD MMMM YYYY'))
-                }
-                const formattedDate = moment(date, Constants.WAKFU_DATE_FORMAT)
+                const formattedDate = formatToWakfuDate(date)
 
                 /// TODO: Create discord bot that creates a webhook to use in order to have button links
                 await webhookClient.send({
@@ -43,7 +51,7 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, d
                     avatarURL: Constants.WEBHOOK_PFP_URL,
                     embeds: [DiscordHelper.createEmbed(noticeBoardTitle, repliesLastPageLink, text.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...", {
                         name: authorName, iconURL: authorAvatarURL, url: authorProfileURL
-                    }, formattedDate.toDate(), {text: topicType === Topics.NoticeBoard ? "Tableau d'affichage" : "Rumeurs"}, topicType === Topics.NoticeBoard ? Colors.White : Colors.DarkBlue)],
+                    }, formattedDate, {text: topicType === Topics.NoticeBoard ? "Tableau d'affichage" : "Rumeurs"}, topicType === Topics.NoticeBoard ? Colors.White : Colors.DarkBlue)],
                 });
             }
         });
@@ -51,7 +59,7 @@ const sendNewTopicReplyUpdate = async (rpHomepageDom, topicType, titleElement, d
 }
 export default {
     sendNewGlobalTopicUpdate: async function (homepageDom, rpHomepageDom, topicType, delta) {
-        logger.debug(chalk.red(`Found ${delta} roleplay main topic post difference!`))
+        logger.debug(`${moment().format()} ${chalk.red(`Found ${delta} roleplay main topic post difference!`)}`)
 
         const mainTopicTitle = homepageDom.window.document.body
             .querySelectorAll("[data-panel-id='493'] tbody > tr")[2]
@@ -67,12 +75,7 @@ export default {
                 title, topicLink, authorName, authorAvatarURL, authorProfileURL, date
             } = TopicHelper.getTopicInfos(topic)
 
-            if (date.includes("Aujourd'hui")) {
-                date = date.replace(/Aujourd'hui/, moment().format('DD MMMM YYYY'))
-            } else if (date.includes("Hier")) {
-                date = date.replace(/Hier/, moment().subtract(1, 'days').format('DD MMMM YYYY'))
-            }
-            const formattedDate = moment(date, Constants.WAKFU_DATE_FORMAT)
+            const formattedDate = formatToWakfuDate(date)
 
             await JSDOM.fromURL(topicLink).then(async postPageDom => {
                 const document = postPageDom.window.document;
@@ -84,14 +87,14 @@ export default {
                     avatarURL: Constants.WEBHOOK_PFP_URL,
                     embeds: [DiscordHelper.createEmbed(title, topicLink, postTextContent.substring(0, Constants.EMBED_DESCRIPTION_LENGTH_LIMIT / 8) + "...", {
                         name: authorName, iconURL: authorAvatarURL, url: authorProfileURL
-                    }, formattedDate.toDate(), {text: _.unescape(mainTopicTitle)}, Colors.Yellow)],
+                    }, formattedDate, {text: _.unescape(mainTopicTitle)}, Colors.Yellow)],
                 });
             })
         }
 
         return delta;
     }, sendNewNoticeBoardTopicUpdate: async function (rpHomepageDom, delta) {
-        logger.debug(chalk.red(`Found ${delta} notice board replies difference!`))
+        logger.debug(`${moment().format()} ${chalk.red(`Found ${delta} notice board replies difference!`)}`)
 
         const pinnedTopics = rpHomepageDom.window.document.body
             .querySelectorAll("tr.ak-pinned-topic")
@@ -104,7 +107,7 @@ export default {
 
         return delta;
     }, sendNewRumorsTopicUpdate: async function (rpHomepageDom, delta) {
-        logger.debug(chalk.red(`Found ${delta} rumors replies difference!`))
+        logger.debug(`${moment().format()} ${chalk.red(`Found ${delta} rumors replies difference!`)}`)
 
         const pinnedTopics = rpHomepageDom.window.document.body
             .querySelectorAll("tr.ak-pinned-topic")

@@ -1,12 +1,17 @@
 import chalk from "chalk";
 import GlobalHelper from "./global-helper.js";
 import Constants from "../constants.js";
+import moment from "moment";
 
 const logger = console;
+
+moment.locale("fr")
+
 const getPinnedTopics = (dom) => {
     const document = dom.window.document
     return document.body.querySelectorAll("tr.ak-pinned-topic")
 }
+
 export default {
     getNoticeBoardRepliesCount: function (rpHomepageDom) {
         const pinnedTopics = getPinnedTopics(rpHomepageDom)
@@ -15,7 +20,7 @@ export default {
             .find(el => el.querySelector("a.ak-title-topic").textContent.trim() === Constants.WAKFU_FORUM_NOTICE_BOARD_TITLE)
             .querySelectorAll("td")[1].innerHTML
 
-        logger.debug(chalk.cyan(`Found ${noticeBoardTopicCount} notice board replies!`))
+        logger.debug(`${moment().format()} ${chalk.cyan(`Found ${noticeBoardTopicCount} notice board replies!`)}`)
 
         return noticeBoardTopicCount;
     }, getRumorsRepliesCount: function (rpHomepageDom) {
@@ -25,7 +30,7 @@ export default {
             .find(el => el.querySelector("a.ak-title-topic").textContent.trim() === Constants.WAKFU_FORUM_RUMORS_TITLE)
             .querySelectorAll("td")[1].innerHTML;
 
-        logger.debug(chalk.cyan(`Found ${rumorsTopicCount} rumors replies!`))
+        logger.debug(`${moment().format()} ${chalk.cyan(`Found ${rumorsTopicCount} rumors replies!`)}`)
 
         return rumorsTopicCount;
     }, getRepliesLastPageLink: function (dom) {

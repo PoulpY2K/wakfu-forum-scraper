@@ -21,25 +21,25 @@ const prisma = new PrismaClient()
 
 await Database.init(prisma)
     .then(async () => {
-        logger.info(chalk.green("Successfully loaded database."))
+        logger.info(`${moment().format()} ${chalk.green("Successfully loaded database.")}`)
     })
     .catch(async (e) => {
-        logger.error(chalk.red(e.stack))
+        logger.error(`${moment().format()} ${chalk.red(e.stack)}`)
         await prisma.$disconnect()
         process.exit(1)
     })
 
-logger.info(chalk.magenta("Wakfu Forum Scraper is ready. Executing job every 10th minute."))
-schedule.scheduleJob('*/10 * * * *', async () => {
-    logger.info(chalk.magenta("Starting job..."))
+logger.info(`${moment().format()} ${chalk.magenta("Wakfu Forum Scraper is ready. Executing job every 10th minute.")}`)
+schedule.scheduleJob(Constants.CRONJOB_PATTERN, async () => {
+    logger.info(`${moment().format()} ${chalk.magenta("Starting job...")}`)
 
     await main()
         .then(async () => {
-            logger.info(chalk.green("Successfully executed job."))
+            logger.info(`${moment().format()} ${chalk.green("Successfully executed job.")}`)
             await prisma.$disconnect()
         })
         .catch(async (e) => {
-            logger.error(chalk.red(e.stack))
+            logger.error(`${moment().format()} ${chalk.red(e.stack)}`)
             await prisma.$disconnect()
             process.exit(1)
         });
@@ -95,9 +95,9 @@ const main = async () => {
                     .then(async (updateCount) => {
                         databaseGlobalTopic.count = +globalTopicCount;
                         await DatabaseHelper.updateTopicCount(prisma, databaseGlobalTopic);
-                        logger.info(chalk.greenBright(`Successfully sent ${updateCount} global topic updates!`))
+                        logger.info(`${moment().format()} ${chalk.greenBright(`Successfully sent ${updateCount} global topic updates!`)}`)
                     })
-                    .catch((e) => logger.error(chalk.red(e.stack)));
+                    .catch((e) => logger.error(`${moment().format()} ${chalk.red(e.stack)}`));
             }
 
             if (deltaNoticeBoardTopicReplies > 0) {
@@ -105,9 +105,9 @@ const main = async () => {
                     .then(async (updateCount) => {
                         databaseNoticeBoardTopic.count = +noticeBoardTopicCount;
                         await DatabaseHelper.updateTopicCount(prisma, databaseNoticeBoardTopic);
-                        logger.info(chalk.greenBright(`Successfully sent ${updateCount} notice board updates!`))
+                        logger.info(`${moment().format()} ${chalk.greenBright(`Successfully sent ${updateCount} notice board updates!`)}`)
                     })
-                    .catch((e) => logger.error(chalk.red(e.stack)));
+                    .catch((e) => logger.error(`${moment().format()} ${chalk.red(e.stack)}`));
             }
 
             if (deltaRumorsTopicReplies > 0) {
@@ -115,9 +115,9 @@ const main = async () => {
                     .then(async (updateCount) => {
                         databaseRumorsTopic.count = +rumorsTopicCount;
                         await DatabaseHelper.updateTopicCount(prisma, databaseRumorsTopic);
-                        logger.info(chalk.greenBright(`Successfully sent ${updateCount} rumors updates!`))
+                        logger.info(`${moment().format()} ${chalk.greenBright(`Successfully sent ${updateCount} rumors updates!`)}`)
                     })
-                    .catch((e) => logger.error(chalk.red(e.stack)));
+                    .catch((e) => logger.error(`${moment().format()} ${chalk.red(e.stack)}`));
             }
         });
     });

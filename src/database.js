@@ -1,8 +1,11 @@
 import chalk from "chalk";
 
 import Topics from "./topics.js";
+import moment from "moment";
 
 const logger = console
+
+moment.locale("fr")
 
 export default {
     init: async function (client) {
@@ -21,7 +24,7 @@ export default {
                 })
 
                 topics.push(newTopic);
-                console.log(chalk.blueBright(`Created ${topic} entry in database`))
+                console.log(`${moment().format()} ${chalk.blueBright(`Created ${topic} entry in database`)}`)
             }
         }
 

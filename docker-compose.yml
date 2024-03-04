@@ -1,4 +1,4 @@
-version: "3"
+version: "3.9"
 services:
   db:
     image: postgres:${POSTGRES_VERSION:-latest}
@@ -29,6 +29,7 @@ services:
 
 volumes:
   wakfu-scraper-db:
+    external: true
 
 networks:
   default:

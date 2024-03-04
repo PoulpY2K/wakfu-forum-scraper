@@ -1,7 +1,10 @@
 import chalk from "chalk";
 import GlobalHelper from "./global-helper.js";
+import moment from "moment";
 
 const logger = console;
+
+moment.locale("fr")
 
 export default {
     getGlobalTopicCount: function (homepageDom) {
@@ -11,7 +14,7 @@ export default {
             .querySelectorAll("td")
 
         const globalTopicCount = +rpCells[2].innerHTML;
-        logger.debug(chalk.cyan(`Found ${globalTopicCount} roleplay main topics!`))
+        logger.debug(`${moment().format()} ${chalk.cyan(`Found ${globalTopicCount} roleplay main topics!`)}`)
 
         return globalTopicCount;
     },
